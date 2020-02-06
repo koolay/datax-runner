@@ -1,12 +1,14 @@
-package main
+# datax-runner
 
-/*
-使用dataax-runner运行datax示例:
+一个 lib,方便 Go 语言调起[datax][https://github.com/alibaba/datax]
 
-1. 下载datax,解压到当前的example目录下
-2. cd example && go run start.go
-*/
+## Why datax-runner
 
+因为官方只提供了一个`python`调用的脚本
+
+## 示例
+
+```go
 import (
 	"context"
 	"log"
@@ -42,7 +44,6 @@ func main() {
 	}, &StdoutLog{}, &StderrLog{})
 
 	ctx := context.Background()
-
 	pid, err := datax.Exec(ctx, "java")
 	if err != nil {
 		log.Fatal(err)
@@ -55,3 +56,4 @@ func main() {
 		log.Fatal(err)
 	}
 }
+```
