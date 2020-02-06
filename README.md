@@ -1,6 +1,6 @@
 # datax-runner
 
-一个 lib,方便 Go 语言调起[datax][https://github.com/alibaba/datax]
+一个 lib,方便 Go 语言调起[datax](https://github.com/alibaba/datax)
 
 ## Why datax-runner
 
