@@ -1,0 +1,25 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+*.log
+*.log.*
+.env
+runtime/
+bin/
+build/
+debug
+*.old
+*.xls
+*.xlsx
+*.scannerwork/
+.idea/
+.DS_Store
+*.pprof
+example/datax/
+vendor/
