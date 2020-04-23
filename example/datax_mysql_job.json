@@ -1,0 +1,62 @@
+{
+    "job": {
+        "setting": {
+            "speed": {
+                 "channel":1
+            }
+        },
+        "content": [
+            {
+                "reader": {
+                    "name": "mysqlreader",
+                    "parameter": {
+                        "username": "root",
+                        "password": "dev",
+                        "connection": [
+                            {
+                                "querySql": [
+                                    "select url,remark,batchid,_id,status,payload,type from event_logs limit 10;"
+                                ],
+                                "jdbcUrl": [
+                                    "jdbc:mysql://127.0.0.1:3306/myapp"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "writer": {
+                    "name": "mysqlwriter",
+                    "parameter": {
+                        "writeMode": "replace",
+                        "username": "root",
+                        "password": "dev",
+                        "column": [
+                            "url",
+                            "remark",
+                            "batchid",
+                            "_id",
+                            "status",
+                            "payload",
+                            "type"
+                        ],
+                        "session": [
+                        	"set session sql_mode='ANSI'"
+                        ],
+                        "preSql": [
+                            "truncate table event_logs_back"
+                        ],
+                        "connection": [
+                            {
+                                "jdbcUrl": "jdbc:mysql://127.0.0.1:3306/myapp",
+                                "table": [
+                                    "event_logs_back"
+                                ]
+                            }
+                        ]
+                    }
+                }
+
+            }
+        ]
+    }
+}

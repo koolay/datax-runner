@@ -9,6 +9,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"log"
 	"time"
 
@@ -30,6 +31,10 @@ func (lg *StderrLog) Write(text string) {
 }
 
 func main() {
+	var cfgFilePath string
+	flag.StringVar(&cfgFilePath, "config", "./datax_stream_job.json", "job config file")
+	flag.Parse()
+
 	datax := dataxr.NewDataX(dataxr.Config{
 		Debug:      true,
 		Xms:        "512m",
@@ -38,7 +43,7 @@ func main() {
 		DataxHome:  "./datax",
 		Mode:       "",
 		Jobid:      "1",
-		ConfigFile: "./datax_stream_job.json",
+		ConfigFile: cfgFilePath,
 	}, &StdoutLog{}, &StderrLog{})
 
 	ctx := context.Background()

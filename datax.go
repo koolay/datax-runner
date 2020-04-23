@@ -22,6 +22,10 @@ type Config struct {
 	Mode       string `json:"mode"`
 	Jobid      string `json:"jobid"`
 	ConfigFile string `json:"config_file"`
+	// Writer View job config[reader] template, eg: mysqlreader,streamreader
+	Writer string `json:"writer"`
+	// Reader View job config[writer] template, eg: mysqlwriter,streamwriter
+	Reader string `json:"reader"`
 }
 
 type LogLine interface {
