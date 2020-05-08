@@ -127,13 +127,13 @@ func (d *DataX) Exec(ctx context.Context, program string) (pid int, err error) {
 	d.logPipeWaitGroup.Add(2)
 
 	go func() {
-		if err := d.bindPipStdLog(stderr); err != nil {
+		if err := d.bindPipStdLog(d.stdoutLog, stdout); err != nil {
 			log.Printf("%+v", err)
 		}
 	}()
 
 	go func() {
-		if err := d.bindPipStdLog(stdout); err != nil {
+		if err := d.bindPipStdLog(d.stderrLog, stderr); err != nil {
 			log.Printf("%+v", err)
 		}
 	}()
@@ -141,13 +141,13 @@ func (d *DataX) Exec(ctx context.Context, program string) (pid int, err error) {
 	return
 }
 
-func (d *DataX) bindPipStdLog(stdPip io.Reader) error {
+func (d *DataX) bindPipStdLog(logger LogLine, stdPip io.Reader) error {
 	defer d.logPipeWaitGroup.Done()
 
 	scanner := bufio.NewScanner(stdPip)
 	for scanner.Scan() {
 		line := scanner.Text()
-		d.stderrLog.Write(line)
+		logger.Write(line)
 	}
 
 	return scanner.Err()
