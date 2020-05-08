@@ -10,6 +10,7 @@ import (
 	"log"
 	"os/exec"
 	"path/filepath"
+	"sync"
 	"time"
 )
 
@@ -33,21 +34,23 @@ type LogLine interface {
 }
 
 type DataX struct {
-	cmd       *exec.Cmd
-	quit      chan error
-	stdout    io.ReadCloser
-	stderr    io.ReadCloser
-	cfg       Config
-	stdoutLog LogLine
-	stderrLog LogLine
+	cmd              *exec.Cmd
+	quit             chan error
+	stdout           io.ReadCloser
+	stderr           io.ReadCloser
+	cfg              Config
+	stdoutLog        LogLine
+	stderrLog        LogLine
+	logPipeWaitGroup sync.WaitGroup
 }
 
 func NewDataX(cfg Config, stdoutLog LogLine, stderrLog LogLine) *DataX {
 	return &DataX{
-		cfg:       cfg,
-		quit:      make(chan error, 1),
-		stdoutLog: stdoutLog,
-		stderrLog: stderrLog,
+		cfg:              cfg,
+		quit:             make(chan error, 1),
+		stdoutLog:        stdoutLog,
+		stderrLog:        stderrLog,
+		logPipeWaitGroup: sync.WaitGroup{},
 	}
 }
 
@@ -73,8 +76,8 @@ func (d *DataX) dispose() {
 }
 
 func (d *DataX) Wait(ctx context.Context, timeout time.Duration) error {
-
 	go func() {
+		d.logPipeWaitGroup.Wait()
 		d.quit <- d.cmd.Wait()
 	}()
 
@@ -91,7 +94,6 @@ func (d *DataX) Wait(ctx context.Context, timeout time.Duration) error {
 }
 
 func (d *DataX) Exec(ctx context.Context, program string) (pid int, err error) {
-
 	args, err := parseArgs(d.cfg)
 	if err != nil {
 		return
@@ -122,32 +124,33 @@ func (d *DataX) Exec(ctx context.Context, program string) (pid int, err error) {
 	}
 
 	pid = cmd.Process.Pid
+	d.logPipeWaitGroup.Add(2)
 
 	go func() {
-		scanner := bufio.NewScanner(stderr)
-		for scanner.Scan() {
-			line := scanner.Text()
-			d.stderrLog.Write(line)
-		}
-
-		if err := scanner.Err(); err != nil {
-			cmd.Process.Kill()
+		if err := d.bindPipStdLog(stderr); err != nil {
+			log.Printf("%+v", err)
 		}
 	}()
 
 	go func() {
-		scanner := bufio.NewScanner(stdout)
-		for scanner.Scan() {
-			line := scanner.Text()
-			d.stdoutLog.Write(line)
-		}
-		if err := scanner.Err(); err != nil {
-			cmd.Process.Kill()
-			d.quit <- err
+		if err := d.bindPipStdLog(stdout); err != nil {
+			log.Printf("%+v", err)
 		}
 	}()
 
 	return
+}
+
+func (d *DataX) bindPipStdLog(stdPip io.Reader) error {
+	defer d.logPipeWaitGroup.Done()
+
+	scanner := bufio.NewScanner(stdPip)
+	for scanner.Scan() {
+		line := scanner.Text()
+		d.stderrLog.Write(line)
+	}
+
+	return scanner.Err()
 }
 
 func parseArgs(cfg Config) ([]string, error) {
