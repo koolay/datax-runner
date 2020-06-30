@@ -55,7 +55,6 @@ func NewDataX(cfg Config, stdoutLog LogLine, stderrLog LogLine) *DataX {
 }
 
 func (d *DataX) Kill() error {
-	d.dispose()
 	return d.cmd.Process.Kill()
 }
 
@@ -72,6 +71,10 @@ func (d *DataX) dispose() {
 		if err != nil {
 			log.Print(err)
 		}
+	}
+
+	if err := d.Kill(); err != nil {
+		log.Print(err)
 	}
 }
 

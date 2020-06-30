@@ -49,6 +49,7 @@ linters:
     - wsl
     - stylecheck
     - gomnd
+    - goerr113
   fast: false
 
 linters-settings:
